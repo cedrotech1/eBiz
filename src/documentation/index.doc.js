@@ -39,7 +39,7 @@ const options = {
                 $ref: "#/components/schemas/User",
               },
               example: {
-                email: "superadmin@gmail.com",
+                phone: "0784366616",
                 password: "1234",
               },
             },
@@ -62,7 +62,6 @@ const options = {
         },
       },
     },
-
 
     "/api/v1/users/signup": {
       post: {
@@ -120,7 +119,8 @@ const options = {
                 $ref: "#/components/schemas/User",
               },
               example: {
-                email: "cedrickhakuzimana.com",                    
+                email: "cedrickhakuzimana@gmail.com", 
+                phone: "0784366616",                    
               },
             },
             required: true,
@@ -146,7 +146,7 @@ const options = {
       },
     },
 
-    "/api/v1/users/code/{email}": {
+    "/api/v1/users/code/{identifier}": {
       post: {
         tags: ["Users"],
         summary: "check code !",
@@ -154,14 +154,23 @@ const options = {
         operationId: "code",
         parameters: [
           {
-            name: "email",
+            name: "identifier",
             in: "path",
-            description: "User's email",
-            required: true,
+            description: "User's identifier",
+            required: false,
             schema: {
               type: "string",
             },
           },
+          // {
+          //   name: "phone",
+          //   in: "path",
+          //   description: "User's phone",
+          //   required: false,
+          //   schema: {
+          //     type: "string",
+          //   },
+          // },
         ],
         requestBody: {
           content: {

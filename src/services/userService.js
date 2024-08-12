@@ -20,11 +20,27 @@ export const getUserByEmail = async (email) => {
   }
 };
 
-export const getUserByCode = async (email,code) => {
+
+export const getUserByCodePhone = async (identifier,code) => {
   try {
     const user = await users.findOne(
       {
-        where: { resetkey: code ,email:email},
+        where: { resetkey: code ,phone:identifier},
+      }
+    );
+
+    return user;
+  } catch (error) {
+    // Handle errors here
+    console.error("Error fetching user:", error);
+    throw error;
+  }
+};
+export const getUserByCodeEmail = async (identifier,code) => {
+  try {
+    const user = await users.findOne(
+      {
+        where: { resetkey: code ,email:identifier},
       }
     );
 
@@ -53,9 +69,6 @@ export const getUserChristian = async () => {
   }
 };
 
-
-
-
 export const createUserCustomer = async (user) => {
   // hashing password
   const salt = await bcrypt.genSalt(10);
@@ -76,11 +89,6 @@ export const GetUserPassword = async (id) => {
   });
   return user ? user.password : null;
 };
-
-
-
-
-
 export const getUserByPhone = async (phone) => {
   try {
     const user = await users.findOne({
@@ -96,11 +104,6 @@ export const getUserByPhone = async (phone) => {
   }
 };
 
-
-
-
-
-
 export const getUsers = async (restaurents, id) => {
   const allUsers = await users.findAll({
     where: {
@@ -113,7 +116,6 @@ export const getUsers = async (restaurents, id) => {
   });
   return allUsers;
 };
-
 
 export const getallUsers = async () => {
   const allUsers = await users.findAll({
@@ -137,7 +139,7 @@ export const updateUser = async (id, user) => {
   return null;
 };
 
-export const updateUserCode = async (email, user) => {
+export const updateUserCodeByEmail = async (email, user) => {
   const userToUpdate = await users.findOne(
     { where: { email } },
     { attributes: { exclude: ["password"] } }
@@ -149,6 +151,17 @@ export const updateUserCode = async (email, user) => {
   return null;
 };
 
+export const updateUserCodeByPhone = async (phone, user) => {
+  const userToUpdate = await users.findOne(
+    { where: { phone } },
+    { attributes: { exclude: ["password"] } }
+  );
+  if (userToUpdate) {
+    await users.update(user, { where: { phone } });
+    return user;
+  }
+  return null;
+};
 export const deleteUser = async (id) => {
   const userToDelete = await users.findOne({ where: { id } });
   if (userToDelete) {

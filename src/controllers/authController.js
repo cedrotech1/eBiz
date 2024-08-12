@@ -1,13 +1,13 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-import { getUserByEmail } from "../services/userService.js";
+import { getUserByEmail, getUserByPhone } from "../services/userService.js";
 
 export const login = async (req, res) => {
-  if (!req.body.email || req.body.email === "") {
+  if (!req.body.phone || req.body.phone === "") {
     return res.status(400).json({
       success: false,
-      message: "Please provide email",
+      message: "Please provide pnone number",
     });
   }
   if (!req.body.password || req.body.password === "") {
@@ -17,19 +17,19 @@ export const login = async (req, res) => {
     });
   }
   // console.log(req.body.email)
-  let user = await getUserByEmail(req.body.email);
+  let user = await getUserByPhone(req.body.phone);
   // console.log(user)
   if (!user) {
     return res.status(400).json({
       success: false,
-      message: "Invalid email or password",
+      message: "Invalid phone number or password",
     });
   }
   const validPassword = await bcrypt.compare(req.body.password, user.password);
   if (!validPassword) {
     return res.status(400).json({
       success: false,
-      message: "Invalid email or password",
+      message: "Invalid phone number or password",
     });
   }
 

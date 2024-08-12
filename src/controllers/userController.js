@@ -1,15 +1,18 @@
 
 import {
   createUserCustomer,
-  getUserByEmail,
   getUsers,
   getUser,
   updateUser,
   deleteUser,
   getallUsers,
   GetUserPassword,
-  getUserByCode,
-  updateUserCode
+  getUserByCodePhone,
+  getUserByCodeEmail,
+  updateUserCodeByEmail,
+  updateUserCodeByPhone,
+  getUserByPhone,
+  getUserByEmail
 } from "../services/userService";
 import Email from "../utils/mailer";
 import bcrypt from "bcrypt";
@@ -80,17 +83,17 @@ export const getAllUsers = async (req, res) => {
 
       //   users = users.filter(user => user.role === 'user');
       // }
-      if (req.user.role === "superadmin") {
+      // if (req.user.role === "superadmin") {
   
-        users = users.filter(user => user.role === 'user');
+      //   users = users.filter(user => user.role === 'user');
         
-      }
+      // }
 
-      if (req.user.role === "user") {
+      // if (req.user.role === "user") {
   
-        users = users.filter(user => user.role !== 'superadmin' &&  user.id!=req.user.id);
+      //   users = users.filter(user => user.role !== 'superadmin' &&  user.id!=req.user.id);
         
-      }
+      // }
   
   
 
@@ -107,6 +110,35 @@ export const getAllUsers = async (req, res) => {
     });
   }
 };
+
+
+export const sendMessage = async (req, res) => {
+  try {
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const client = require('twilio')(accountSid, authToken);
+
+    const messageObject = await client.messages.create({
+      body: 'hello sms',
+      messagingServiceSid: process.env.messagingServiceSid,
+      to: '+250784366616',
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Message sent successfully',
+      messageObject,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      message: 'Something went wrong',
+      error,
+    });
+  }
+};
+
+
 
 
 export const getOneUser = async (req, res) => {
@@ -339,76 +371,186 @@ export const resetPassword = async (req, res) => {
   }
 };
 
+// export const checkEmail = async (req, res) => {
+//   const { email } = req.body;
+//   const { phone } = req.body;
+
+//   if (!email) {
+//     return res.status(400).json({
+//       success: false,
+//       message: "Please provide your Email",
+//     });
+//   }
+
+//   if (!phone) {
+//     return res.status(400).json({
+//       success: false,
+//       message: "Please provide your phone",
+//     });
+//   }
+
+//   try {
+//     const user = await getUserByEmail(email);
+//     if (!user) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "There is no account associated with that email",
+//       });
+//     }
+
+//     const userx = await getUserByPhone(phone);
+//     if (!userx) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "There is no account associated with that phone",
+//       });
+//     }
+
+
+//     const timestamp = Date.now().toString().slice(-3); 
+//     const randomPart = Math.floor(100 + Math.random() * 900).toString(); 
+//     const code = timestamp + randomPart; 
+
+//     const byphone = await updateUserCodeByPhone(phone, {resetkey:code});
+
+
+//     await new Email(user, null, code).sendResetPasswordCode();
+//     const byemail = await updateUserCodeByEmail(email, {resetkey:code});
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Code sent to your email successfully",
+//     });
+//   } catch (error) {
+//     console.error("Error changing password:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Internal server error",
+//     });
+//   }
+// };
+
 export const checkEmail = async (req, res) => {
-  const { email } = req.body;
-  if (!email) {
+  const { email, phone } = req.body;
+
+  if (!email && !phone) {
     return res.status(400).json({
       success: false,
-      message: "Please provide your Email",
+      message: "Please provide either your email or phone number",
+    });
+  }
+
+  if (email && phone) {
+    return res.status(400).json({
+      success: false,
+      message: "Please provide either an email or phone number, not both",
     });
   }
 
   try {
-    const user = await getUserByEmail(email);
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "There is no account associated with that email",
-      });
+    let user, code, resetMessage;
+
+    if (email) {
+      user = await getUserByEmail(email);
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          message: "There is no account associated with that email",
+        });
+      }
+
+      code = generateResetCode();
+      await updateUserCodeByEmail(email, { resetkey: code });
+      await new Email(user, null, code).sendResetPasswordCode();
+      resetMessage = "Code sent to your email successfully";
     }
 
-    // Generate a random 6-digit code including time string
-    const timestamp = Date.now().toString().slice(-3); // Get the last 3 digits of the timestamp
-    const randomPart = Math.floor(100 + Math.random() * 900).toString(); // Get a 3-digit random number
-    const code = timestamp + randomPart; // Combine both parts to form a 6-digit code
+    if (phone) {
+      user = await getUserByPhone(phone);
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          message: "There is no account associated with that phone",
+        });
+      }
 
+      code = generateResetCode();
+      await updateUserCodeByPhone(phone, { resetkey: code });
 
-    await new Email(user, null, code).sendResetPasswordCode();
-    const user1 = await updateUserCode(email, {resetkey:code});
+      const accountSid = process.env.TWILIO_ACCOUNT_SID;
+      const authToken = process.env.TWILIO_AUTH_TOKEN;
+      const client = require('twilio')(accountSid, authToken);
+  
+      const messageObject = await client.messages.create({
+        body: `Hello,\nThis is a your reset code.\nBest regards,\n${code}`,
+        messagingServiceSid: process.env.messagingServiceSid,
+        to: `+25${phone}`,
+      });
+
+    
+      resetMessage = "Code sent to your phone successfully";
+    }
 
     return res.status(200).json({
       success: true,
-      message: "Code sent to your email successfully",
+      message: resetMessage,
     });
   } catch (error) {
-    console.error("Error changing password:", error);
+    console.error("Error processing request:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
     });
   }
 };
+
+// Helper function to generate the reset code
+const generateResetCode = () => {
+  const timestamp = Date.now().toString().slice(-3);
+  const randomPart = Math.floor(100 + Math.random() * 900).toString();
+  return timestamp + randomPart;
+};
+
 
 export const checkCode = async (req, res) => {
   const { code } = req.body;
-  if (!req.params.email) {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide your Email",
-    });
-  }
+  const { identifier } = req.params;
+
+  // Regular expression to check if the identifier is an email
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
 
   try {
-    const user = await getUserByCode(req.params.email,code);
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "invalid code",
-      });
+    if (isEmail) {
+      const user = await getUserByCodeEmail(identifier, code);
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid code for the email",
+        });
+      }
+    } else {
+      const userx = await getUserByCodePhone(identifier, code);
+      if (!userx) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid code for the phone number",
+        });
+      }
     }
 
     return res.status(200).json({
       success: true,
-      message: "now you can reset your password",
+      message: "Code is valid. You can now reset your password.",
     });
   } catch (error) {
-    console.error("Error changing password:", error);
+    console.error("Error validating code:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
     });
   }
 };
+
 
 export const ResetPassword = async (req, res) => {
 
