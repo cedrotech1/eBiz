@@ -109,8 +109,8 @@ const options = {
     "/api/v1/users/check": {
       post: {
         tags: ["Users"],
-        summary: "Get  users user by email by email and send code",
-        description: "Get all users",
+        summary: "send verification code throught email or phone",
+        description: "check email or phone number befor sending verification code on either email or thone",
         operationId: "getAllUserscheck",
         requestBody: {
           content: {
@@ -149,8 +149,8 @@ const options = {
     "/api/v1/users/code/{identifier}": {
       post: {
         tags: ["Users"],
-        summary: "check code !",
-        description: "checking code send thrugth email",
+        summary: "check verification code !",
+        description: "checking code send  email or thone number, you can pass identifier as param either phone or email depending user preferance",
         operationId: "code",
         parameters: [
           {
@@ -427,17 +427,17 @@ const options = {
       }
     },
 // resetPassword
-"/api/v1/users/resetPassword/{email}": {
+"/api/v1/users/resetPassword/{identifier}": {
   put: {
     tags: ["Users"],
     summary: "reset  user password",
-    description: "reset  user password  !! ",
+    description: "reset  user password  !!  you can pass identifier as param either phone or email depending user preferance",
     operationId: "reset-passwordr",
     parameters: [
       {
-        name: "email",
+        name: "identifier",
         in: "path",
-        description: "User's email",
+        description: "User's identifier",
         required: true,
         schema: {
           type: "string",
@@ -491,9 +491,9 @@ const options = {
                 $ref: "#/components/schemas/User",
               },
               example: {
-                oldPassword: "oldp",
-                newPassword: "newp",
-                confirmPassword: "cpass",
+                oldPassword: "oldpassword",
+                newPassword: "newpassword",
+                confirmPassword: "confirmpassword",
                
               },
             },
@@ -523,7 +523,7 @@ const options = {
       delete: {
         tags: ["Users"],
         summary: "Delete a user",
-        description: "Delete a user",
+        description: "Delete a user api",
         operationId: "deleteOneUser",
         parameters: [
           {
@@ -559,7 +559,7 @@ const options = {
       get: {
         tags: ["Busineses"],
         summary: "all  a Busineses",
-        description: "Busineses",
+        description: "get all busineses registered",
         operationId: "all Busineses",
         responses: {
           201: {

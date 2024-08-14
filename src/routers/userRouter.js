@@ -23,6 +23,6 @@ router.get('/:id', protect, getOneUser);
 router.put('/update/:id', protect, updateOneUser);
 router.delete('/delete/:id', protect, deleteOneUser);
 router.put('/changePassword', protect, changePassword);
-router.put('/resetPassword/:email', ResetPassword);
+router.put('/resetPassword/:identifier', ResetPassword);
 
 export default router;

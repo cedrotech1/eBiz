@@ -554,13 +554,32 @@ export const checkCode = async (req, res) => {
 
 export const ResetPassword = async (req, res) => {
 
-  const user = await getUserByEmail(req.params.email);
-  if (!user) {
-    return res.status(400).json({
-      success: false,
-      message: "There is no account associated with that email",
-    });
-  }
+
+
+  const { identifier } = req.params;
+
+  // Regular expression to check if the identifier is an email
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+  let user;
+  
+    if (isEmail) {
+       user = await getUserByEmail(identifier);
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          message: "There is no account associated with that email",
+        });
+      }
+    } else {
+       user = await getUserByPhone(identifier);
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          message: "There is no account associated with that phone number",
+        });
+      }
+    }
+
   if (!user.resetkey) {
     return res.status(400).json({
       success: false,
@@ -576,7 +595,6 @@ export const ResetPassword = async (req, res) => {
   }
 
   try {
-
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
         success: false,
