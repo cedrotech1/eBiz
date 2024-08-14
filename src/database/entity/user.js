@@ -4,7 +4,7 @@ const { Model, DataTypes } = require("sequelize");
 module.exports = (sequelize) => {
   class User extends Model {
     static associate(models) {
-      // Add associations here if needed
+      User.hasMany(models.Favorite, { foreignKey: "userId", as: "Favorites" });
     }
   }
 
@@ -19,11 +19,10 @@ module.exports = (sequelize) => {
       resetkey: DataTypes.STRING,
       notify: DataTypes.STRING,
       file: DataTypes.STRING,
-     
     },
     {
       sequelize,
-      modelName: "User", // Use singular name for the model
+      modelName: "User",
     }
   );
 

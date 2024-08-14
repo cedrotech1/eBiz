@@ -21,6 +21,7 @@ const options = {
     { name: "Authontication", description: "" },
     { name: "Users", description: "Users" },
     { name: "Busineses", description: "Busineses" },
+    { name: "Favorites", description: "Favorites" },
 
 
   ],
@@ -945,6 +946,105 @@ const options = {
           },
           401: {
             description: "Unauthorized",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+
+
+    "/api/v1/favorite": {
+      post: {
+        tags: ["Favorites"],
+        summary: "add favorite ",
+        description: "adding business to user favorites",
+        operationId: "favorites",
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/User",
+              },
+              example: {
+                businessId: "1",
+              },
+            },
+            required: true,
+          },
+        },
+        responses: {
+          201: {
+            description: "User created successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/favorite/all": {
+      get: {
+        tags: ["Favorites"],
+        summary: "Get all busness Favorites",
+        description: "Get all users business favorite",
+        operationId: "My_Favorites",
+        responses: {
+          200: {
+            description: "business favorite ritrieved successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+
+    "/api/v1/favorite/{businessId}": {
+      delete: {
+        tags: ["Favorites"],
+        summary: "remove Favorites",
+        description: "remove business as user favorite  api",
+        operationId: "removefav",
+        parameters: [
+          {
+            name: "businessId",
+            in: "path",
+            description: "business id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+        responses: {
+          200: {
+            description: "favorite business deleted successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          404: {
+            description: "User not found",
           },
           500: {
             description: "Something went wrong",

@@ -37,54 +37,6 @@ export const getAllBusineses = async () => {
 
 
 // ckeckBusineses
-export const approveBusineses = async (id) => {
-  const Businesestoapprove = await Busineses.findOne(
-    { where: { id } }
-
-  );
-  if (Businesestoapprove) {
-    await Busineses.update({ status: "approved" }, { where: { id } });
-    return Businesestoapprove;
-  }
-  return null;
-};
-
-export const ckeckBusineses = async (id) => {
-  const Businesestoapprove = await Busineses.findOne(
-    { where: { id } }
-
-  );
-  if (Businesestoapprove) {
-    await Busineses.update({ status: "checked" }, { where: { id } });
-    return Businesestoapprove;
-  }
-  return null;
-};
-
-export const unckeckBusineses = async (id) => {
-  const Businesestoapprove = await Busineses.findOne(
-    { where: { id } }
-
-  );
-  if (Businesestoapprove) {
-    await Busineses.update({ status: "pending" }, { where: { id } });
-    return Businesestoapprove;
-  }
-  return null;
-};
-
-
-export const rejectBusineses = async (id) => {
-  const Businesestoapprove = await Busineses.findOne(
-    { where: { id } }
-
-  );
-  if (Businesestoapprove) {
-    await Busineses.update({ status: "rejected" }, { where: { id } });
-    return Businesestoapprove;
-  }
-  return null;
-};
 
 
 
@@ -130,55 +82,38 @@ export const updateOneBusineses = async (id, BusinesesData) => {
   }
 };
 
-
-
-export const pending = async (id) => {
-  const pending = await Busineses.findAll({ where: { status:'pending' } });
-  if (pending) {
-    return pending;
-  }
-  return null;
-};
-
-export const getone = async (id) => {
+export const checkExistingBuz = async (businessId) => {
   try {
-    const events = await Busineses.findAll({
-      where: {
-        id: id,
-      },
-   
-      include: [
-        {
-          model: users,
-          as: "BusinesesUser",
-          attributes: {
-            exclude: ["password"],
-          },
-        },
-      ],
+    const business = await Busineses.findOne({
+      where: { 
+        id: businessId,
+      }
     });
 
-    if (!events || events.length === 0) {
-      return null;
-    }
-
-
-
-    return events;
+    return business;
   } catch (error) {
-    console.error("Error fetching events:", error);
+    console.error("Error checking for existing favorite:", error);
     throw error;
   }
 };
 
 
 
-export const checkExistingBusineses = async (title) => {
-  return await Busineses.findOne({
-    where: {
-      title,
-    },
-  });
+
+
+
+
+export const checkExistingBusineses = async (id) => {
+  try {
+    const business = await Busineses.findOne({
+      where: { id },
+    });
+
+    return business; // Returns null if not found, otherwise returns the business object
+  } catch (error) {
+    console.error("Error checking business:", error);
+    throw error;
+  }
 };
 
 export const deleteOneBusineses = async (id) => {

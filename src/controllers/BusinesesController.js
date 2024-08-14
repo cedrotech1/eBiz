@@ -20,8 +20,6 @@ import imageUploader from "../helper/imageUplouder";
 
 export const addBusinesesController = async (req, res) => {
   try {
-  
-
     console.log(req.user.id)
     req.body.userid = req.user.id;
     let image; 

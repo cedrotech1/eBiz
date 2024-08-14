@@ -5,6 +5,7 @@ module.exports = (sequelize) => {
   class Busineses extends Model {
     static associate(models) {
       Busineses.belongsTo(models.User, { foreignKey: "userid", as: "BusinesesUser" });
+      Busineses.hasMany(models.Favorite, { foreignKey: "businessId", as: "Favorites" });
     }
   }
 
@@ -15,7 +16,7 @@ module.exports = (sequelize) => {
         allowNull: false,
       },
       description: {
-        type: DataTypes.TEXT, // Using TEXT as it allows for longer descriptions
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       status: {
@@ -78,11 +79,6 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      // Uncomment and add this if 'korariId' is a required column
-      // korariId: {
-      //   type: DataTypes.INTEGER,
-      //   allowNull: true,
-      // },
     },
     {
       sequelize,
