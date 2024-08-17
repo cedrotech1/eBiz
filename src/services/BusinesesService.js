@@ -1,9 +1,8 @@
 import db from "../database/entity/index.js";
 
 const users = db["User"];
-const Korari = db["Koraris"];
 const Busineses = db["Busineses"];
-
+const Reviews = db['Review'];
 
 
 export const createBusineses = async (BusinesesData) => {
@@ -16,21 +15,41 @@ export const createBusineses = async (BusinesesData) => {
 
 export const getAllBusineses = async () => {
   try {
-    const AllBusineses = await Busineses.findAll(
-      {
-        include: [
-          {
-            model: users,
-            as: "BusinesesUser",
-          },
-        ],
-      }
-    );
+    const businesses = await Busineses.findAll({
+      include: [
+        {
+          model: Reviews,
+          as: 'Reviews',
+          include: [{ model: users, as: 'user', attributes: ['firstname', 'lastname'] }]
+        }
+      ]
+    });
 
-    return AllBusineses;
+    const businessesWithStats = await Promise.all(businesses.map(async (business) => {
+      const reviews = business.Reviews;
+      const totalReviews = reviews.length;
+      const averageRating = totalReviews > 0
+        ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+        : 0;
+
+      const ratingBreakdown = reviews.reduce((acc, review) => {
+        acc[review.rating] = (acc[review.rating] || 0) + 1;
+        return acc;
+      }, {});
+
+      return {
+        business,
+        ratingStats: {
+          totalReviews,
+          averageRating,
+          ratingBreakdown,
+        },
+      };
+    }));
+
+    return businessesWithStats;
   } catch (error) {
-    console.error("Error fetching all restaurants with users:", error);
-    throw error;
+    throw new Error(`Error fetching all businesses with reviews and ratings: ${error.message}`);
   }
 };
 
@@ -126,21 +145,85 @@ export const deleteOneBusineses = async (id) => {
 };
 
 
-export const updateOneResto = async (id, resto) => {
-  const restoToUpdate = await Busineses.findOne({ where: { id } });
-  if (restoToUpdate) {
-    await Busineses.update(resto, { where: { id } });
-    return resto;
+
+export const getBusinessWithReviewsAndRatings = async (businessId) => {
+  try {
+    const business = await Busineses.findOne({
+      where: { id: businessId },
+      include: [
+        {
+          model: Reviews,
+          as: 'Reviews',
+          include: [{ model: users, as: 'user', attributes: ['firstname', 'lastname'] }]
+        }
+      ]
+    });
+
+    if (!business) {
+      return null;
+    }
+
+    // Calculate Rating Statistics
+    const reviews = business.Reviews;
+    const totalReviews = reviews.length;
+    const averageRating = totalReviews > 0
+      ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+      : 0;
+
+    const ratingBreakdown = reviews.reduce((acc, review) => {
+      acc[review.rating] = (acc[review.rating] || 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      business,
+      ratingStats: {
+        totalReviews,
+        averageRating,
+        ratingBreakdown,
+      },
+    };
+  } catch (error) {
+    throw new Error(`Error fetching business with reviews and ratings: ${error.message}`);
   }
-  return null;
 };
 
-export const deactivateResto = async (id) => {
-  const restoToUpdate = await Busineses.findOne({ where: { id } });
-  if (restoToUpdate) {
-    await Busineses.update({ status: 'inactive' }, { where: { id } });
-    return restoToUpdate;
-  }
-  return null;
-};
+export const getAllBusinessesWithReviewsAndRatings = async () => {
+  try {
+    const businesses = await Busineses.findAll({
+      include: [
+        {
+          model: Reviews,
+          as: 'Reviews',
+          include: [{ model: users, as: 'user', attributes: ['firstname', 'lastname'] }]
+        }
+      ]
+    });
 
+    const businessesWithStats = await Promise.all(businesses.map(async (business) => {
+      const reviews = business.Reviews;
+      const totalReviews = reviews.length;
+      const averageRating = totalReviews > 0
+        ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+        : 0;
+
+      const ratingBreakdown = reviews.reduce((acc, review) => {
+        acc[review.rating] = (acc[review.rating] || 0) + 1;
+        return acc;
+      }, {});
+
+      return {
+        business,
+        ratingStats: {
+          totalReviews,
+          averageRating,
+          ratingBreakdown,
+        },
+      };
+    }));
+
+    return businessesWithStats;
+  } catch (error) {
+    throw new Error(`Error fetching all businesses with reviews and ratings: ${error.message}`);
+  }
+};

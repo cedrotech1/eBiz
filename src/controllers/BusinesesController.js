@@ -5,7 +5,7 @@ import {
   deleteOneBusineses,
   pending,
 
-  getone,
+  getAllBusinessesWithReviewsAndRatings,
   updateOneBusineses,
 
   
@@ -191,7 +191,7 @@ export const getOneBusinesesController = async (req, res) => {
 
   try {
     // const { id } = req.params;
-    let data = await getone(req.params.id);
+    let data = await getAllBusinessesWithReviewsAndRatings(req.params.id);
     if (!data) {
       return res.status(404).json({
         message: "Busineses not found",

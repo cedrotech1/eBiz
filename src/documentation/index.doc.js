@@ -22,6 +22,7 @@ const options = {
     { name: "Users", description: "Users" },
     { name: "Busineses", description: "Busineses" },
     { name: "Favorites", description: "Favorites" },
+    { name: "rating", description: "rating" },
 
 
   ],
@@ -1045,6 +1046,78 @@ const options = {
           },
           404: {
             description: "User not found",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+
+    "/api/v1/reviews": {
+      post: {
+        tags: ["rating"],
+        summary: "add rating ",
+        description: "adding business rating ",
+        operationId: "rating",
+        requestBody: {
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/User",
+              },
+              example: {
+                 businessId: 1,  
+                 rating: 4,      
+                 review: "Great service, highly recommend!" 
+              },
+            },
+            required: true,
+          },
+        },
+        responses: {
+          201: {
+            description: "User created successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
+          },
+          500: {
+            description: "Something went wrong",
+          },
+        },
+      },
+    },
+    "/api/v1/businesses/{businessId}/reviews": {
+      get: {
+        tags: ["rating"],
+        summary: "get one  a rating",
+        description: "Busineses rating and reviews",
+        operationId: "getBusineses rating and reviews",
+        parameters: [
+          {
+            name: "businessId",
+            in: "path",
+            description: "Busineses's id",
+            required: true,
+            schema: {
+              type: "string",
+            },
+          },
+        ],
+      
+        responses: {
+          201: {
+            description: "Busineses rating and reviews retrieved successfully",
+          },
+          400: {
+            description: "Bad request",
+          },
+          401: {
+            description: "Unauthorized",
           },
           500: {
             description: "Something went wrong",
